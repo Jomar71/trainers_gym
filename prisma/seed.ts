@@ -33,7 +33,7 @@ async function main() {
     const trainer = await prisma.trainer.create({
         data: {
             userId: user.id,
-            specialization: 'Entrenamiento Personal'
+            specialties: 'Entrenamiento Personal'
         }
     })
 
