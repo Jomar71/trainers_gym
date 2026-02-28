@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  role           String    @default("CLIENT")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  clientProfile  Client?
+  sessions       Session[]
+  trainerProfile Trainer?
+}
+
+model Trainer {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  specialties    String?
+  bio            String?
+  appointments   Appointment[]
+  clients        Client[]
+  nutritionPlans NutritionPlan[]
+  routines       Routine[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  trainerId      String
+  goal           String?
+  weight         Float?
+  height         Float?
+  phone          String?
+  appointments   Appointment[]
+  trainer        Trainer         @relation(fields: [trainerId], references: [id])
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nutritionPlans NutritionPlan[]
+  payments       Payment[]
+  routines       Routine[]
+}
+
+model Routine {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  trainerId    String
+  clientId     String?
+  isTemplate   Boolean    @default(false)
+  completed    Boolean    @default(false)
+  assignedDate DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  exercises    Exercise[]
+  client       Client?    @relation(fields: [clientId], references: [id])
+  trainer      Trainer    @relation(fields: [trainerId], references: [id])
+}
+
+model Exercise {
+  id        String  @id @default(cuid())
+  routineId String
+  name      String
+  sets      Int?
+  reps      Int?
+  weight    Float?
+  restTime  Int?
+  videoUrl  String?
+  notes     String?
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+}
+
+model NutritionPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  trainerId   String
+  clientId    String
+  meals       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      Client   @relation(fields: [clientId], references: [id])
+  trainer     Trainer  @relation(fields: [trainerId], references: [id])
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  startTime DateTime
+  endTime   DateTime
+  status    String   @default("SCHEDULED")
+  trainerId String
+  clientId  String
+  notes     String?
+  client    Client   @relation(fields: [clientId], references: [id])
+  trainer   Trainer  @relation(fields: [trainerId], references: [id])
+}
+
+model Payment {
+  id       String    @id @default(cuid())
+  amount   Float
+  currency String    @default("USD")
+  status   String    @default("PENDING")
+  dueDate  DateTime
+  paidDate DateTime?
+  clientId String
+  client   Client    @relation(fields: [clientId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
