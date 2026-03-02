@@ -1,12 +1,29 @@
-import { Calendar, Users, BarChart3, LogOut, Dumbbell, Utensils } from 'lucide-react';
+import LogoutButton from '@/components/logout-button';
+import { auth } from '@/lib/auth';
+import { BarChart3, Calendar, Dumbbell, Users, Utensils } from 'lucide-react';
 import Link from 'next/link';
-import LogoutButton from '@/components/logout-button'; // Nuevo componente para cerrar sesión
+import { redirect } from 'next/navigation';
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const session = await auth()
+    
+    // If user is not logged in, redirect to login
+    if (!session?.user) {
+      redirect('/login')
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userRole = (session.user as any).role ?? 'CLIENT'
+    
+    // If user is a CLIENT, redirect to client portal
+    if (userRole === 'CLIENT') {
+      redirect('/client/dashboard')
+    }
+
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}

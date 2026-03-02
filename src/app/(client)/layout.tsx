@@ -1,11 +1,29 @@
-import { Dumbbell, Calendar, User, LogOut, Home, Utensils } from 'lucide-react';
+import LogoutButton from '@/components/logout-button';
+import { auth } from '@/lib/auth';
+import { Calendar, Dumbbell, Home, Utensils } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-export default function ClientLayout({
+export default async function ClientLayout ({
     children,
 }: {
     children: React.ReactNode
 }) {
+  const session = await auth()
+  
+  // If user is not logged in, redirect to login
+  if (!session?.user) {
+    redirect('/login')
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userRole = (session.user as any).role ?? 'CLIENT'
+  
+  // If user is a TRAINER, redirect to trainer dashboard
+  if (userRole === 'TRAINER') {
+    redirect('/dashboard')
+  }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Mobile-first Header */}
@@ -14,9 +32,7 @@ export default function ClientLayout({
                     TrainerHub
                 </h1>
                 <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="h-4 w-4 text-gray-600" />
-                    </div>
+                    <LogoutButton />
                 </div>
             </header>
 

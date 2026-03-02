@@ -1,8 +1,8 @@
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import bcrypt from "bcryptjs"
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { db } from "./db" // Usar la instancia global de db
-import bcrypt from "bcryptjs"
+import { db } from "./db"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(db),
@@ -35,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         return null
                     }
 
-                    // Return user object
+                    // Return user object with role
                     return {
                         id: user.id,
                         name: user.name,
@@ -56,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async session({ session, token }) {
             if (token && session.user) {
                 session.user.id = token.sub as string
-                // @ts-ignore
+                // @ts-expect-error - Adding role to session
                 session.user.role = token.role as string
             }
             return session
@@ -64,7 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
-                // @ts-ignore
+                // @ts-expect-error - Adding role to token
                 token.role = user.role
             }
             return token
@@ -73,5 +73,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     pages: {
         signIn: "/login",
     },
-    debug: true, // Enable debug mode to see errors
+    debug: true,
 })

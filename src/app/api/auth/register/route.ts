@@ -49,25 +49,23 @@ export async function POST(request: Request) {
     } 
     // Si el rol es cliente, crear perfil de cliente
     else if (role === 'client') {
-      // Para clientes, necesitamos asociarlos con un entrenador existente
-      // Por defecto, asociaremos al cliente con el primer entrenador disponible
-      // En una implementación real, esto podría ser seleccionado por el administrador
-      let trainerId = '';
-      
       // Buscar un entrenador disponible (el primero por ahora)
       const firstTrainer = await db.trainer.findFirst({});
-      if (firstTrainer) {
-        trainerId = firstTrainer.id;
-      } else {
-        // Si no hay entrenadores, el cliente queda sin asignar temporalmente
-        // Esto es válido si primero se registra un entrenador
-        trainerId = ''; // Será asignado más adelante
+      
+      if (!firstTrainer) {
+        // Si no hay entrenadores, no podemos crear el cliente aún
+        // Eliminamos el usuario creado y devolvemos error
+        await db.user.delete({ where: { id: newUser.id } });
+        return NextResponse.json(
+          { message: 'No hay entrenadores disponibles. Por favor, contacta al administrador.' },
+          { status: 400 }
+        );
       }
 
       await db.client.create({
         data: {
           userId: newUser.id,
-          trainerId: trainerId,
+          trainerId: firstTrainer.id,
         },
       });
     }
@@ -78,6 +76,12 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error en el registro:', error);
+    // Si hubo un error, eliminar el usuario creado para evitar usuarios huérfanos
+    try {
+      await db.user.delete({ where: { id: newUser?.id } });
+    } catch (deleteError) {
+      // Ignorar errores al eliminar si el usuario no fue creado
+    }
     return NextResponse.json(
       { message: 'Error interno del servidor' },
       { status: 500 }
