@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro · TrainerHub</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-backdrop"></div>
+    <div class="auth-card">
+        <div class="auth-brand">TrainerHub</div>
+        <h1 class="auth-heading">Crear cuenta</h1>
+        <p class="auth-sub">Comienza tu viaje hoy</p>
+
+        <form id="registerForm" novalidate>
+            <div class="form-group mb-3">
+                <label class="form-label" for="name">Nombre completo</label>
+                <input class="form-input" id="name" type="text" placeholder="Tu nombre" autocomplete="name" required>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" for="email">Correo electrónico</label>
+                <input class="form-input" id="email" type="email" placeholder="tu@correo.com" autocomplete="email" required>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" for="password">Contraseña</label>
+                <input class="form-input" id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" for="password2">Confirmar contraseña</label>
+                <input class="form-input" id="password2" type="password" placeholder="Repite tu contraseña" autocomplete="new-password" required>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" for="role">Quiero usarlo como</label>
+                <select class="form-input" id="role">
+                    <option value="client">Cliente (entrenar)</option>
+                    <option value="trainer">Entrenador (gestionar)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Crear cuenta</button>
+        </form>
+
+        <p class="auth-footer">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+    </div>
+
+    <noscript class="noscript">Esta aplicación necesita JavaScript para funcionar. Actívalo en tu navegador.</noscript>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        (function () {
+            var form = document.getElementById('registerForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var name = document.getElementById('name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                var pass = document.getElementById('password').value;
+                var pass2 = document.getElementById('password2').value;
+                var role = document.getElementById('role').value;
+
+                if (!name || !email || !pass) { GP.ui.toast('Completa todos los campos', 'error'); return; }
+                if (pass !== pass2) { GP.ui.toast('Las contraseñas no coinciden', 'error'); return; }
+                var res = GP.auth.register(name, email, pass, role);
+                if (res.error) { GP.ui.toast(res.error, 'error'); return; }
+                GP.auth.login(email, pass, true);
+                GP.ui.toast('Cuenta creada. ¡Bienvenido, ' + name + '!', 'success');
+                setTimeout(function () { location.href = GP.auth.homeURL(); }, 600);
+            });
+            if (GP.auth.current()) location.replace(GP.auth.homeURL());
+        })();
+    </script>
+</body>
+</html>
