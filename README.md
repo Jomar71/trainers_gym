@@ -9,7 +9,7 @@ Los datos demo se guardan en `localStorage`.
 
 ## Demo rápida
 
-1. Abre `frontend/index.html` (doble clic). Redirige automáticamente al login.
+1. Abre `index.html` (doble clic). Redirige automáticamente al login.
 2. Inicia sesión con una cuenta demo:
 
 | Rol       | Email                 | Contraseña  |
@@ -33,8 +33,8 @@ Los datos demo se guardan en `localStorage`.
 
 ```
 gympro/
+├── index.html               # Punto de entrada (bootstraps por rol)
 ├── frontend/
-│   ├── index.html           # Punto de entrada (bootstraps por rol)
 │   ├── css/style.css        # CSS responsive (mobile-first)
 │   ├── js/
 │   │   ├── data.js          # Dataset demo + persistencia (localStorage)
