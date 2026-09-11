@@ -22,6 +22,11 @@
             var c = client();
             go.textContent = c && c.goal ? c.goal : 'Objetivo: por definir';
         }
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-outline btn-sm js-logout';
+        btn.textContent = 'Salir';
+        if (el) el.appendChild(btn);
     }
 
     function initials(name) {

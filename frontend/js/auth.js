@@ -41,19 +41,34 @@
     /* Comprueba sesión antes de cargar una página privada */
     function guard(requiredRole) {
         var s = current();
-        var base = location.href.split('/').slice(0, 3).join('/'); // solo para file://
         if (!s) { location.replace(getLoginURL()); return null; }
         if (requiredRole && s.role !== requiredRole) {
-            location.replace(s.role === 'TRAINER' ? 'home.html' : 'client/home.html');
+            location.replace(relToPages(s.role === 'TRAINER' ? 'trainer/home.html' : 'client/home.html'));
             return null;
         }
         return s;
     }
+    /* Ruta relativa desde la carpeta actual hasta pages/ (sirve para file:// y http) */
+    function relToPages(sub) {
+        var path = (location.pathname || '').split('?')[0];
+        var file = path.slice(path.lastIndexOf('/') + 1);
+        var dir = path.slice(0, path.length - file.length);
+        var segs = dir.split('/').filter(function (s) { return s.length > 0; });
+        var ups = 0, i;
+        for (i = segs.length - 1; i >= 0; i--) {
+            if (segs[i] === 'pages') break;
+            ups++;
+        }
+        if (i < 0) {
+            var hasFrontend = segs.indexOf('frontend') !== -1;
+            return (hasFrontend ? 'frontend/' : '') + sub;
+        }
+        var prefix = '';
+        for (var k = 0; k < ups; k++) prefix += '../';
+        return prefix + sub;
+    }
     function getLoginURL() {
-        // Desde pages/ o subcarpetas regresamos a pages/login.html
-        var path = location.pathname || '';
-        var inPages = /\/pages\//.test(path) || path.indexOf('pages/') !== -1;
-        return inPages ? 'login.html' : 'pages/login.html';
+        return relToPages('login.html');
     }
     function user() {
         var s = current();
